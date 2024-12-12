@@ -1,0 +1,24 @@
+
+image_name="{{image_name}}"
+target_dir="{{target_dir}}"
+
+echo "Saving $image_name to $target_dir"
+
+if [ ! -d $target_dir ]; then mkdir -p $target_dir; fi
+echo $image_base64 | base64 -d > $target_path
+
+for USERNAME in $(dscl . list /Users | xargs -I % sh -c '[ -d /Users/% ] && echo %')
+  do
+   echo "Setting wallpaper for $USERNAME" 
+   /usr/libexec/PlistBuddy -c "set AllSpacesAndDisplays:Desktop:Content:Choices:0:Files:0:relative file:///$target_path" \
+     /Users/$USERNAME/Library/Application\ Support/com.apple.wallpaper/Store/Index.plist
+
+    /usr/libexec/PlistBuddy -c "set SystemDefault:Desktop:Content:Choices:0:Files:0:relative file:///$target_path" \
+     /Users/$USERNAME/Library/Application\ Support/com.apple.wallpaper/Store/Index.plist
+
+   echo "Set wallpaper for $USERNAME"
+done
+
+echo "Restarting WallpaperAgent"
+
+killall WallpaperAgent
